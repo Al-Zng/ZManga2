@@ -52,10 +52,9 @@ class ScraperManager: NSObject, ObservableObject, WKNavigationDelegate {
             let hrefPattern = "href=\"([^\"]+)\""
             let titlePattern = "title=\"([^\"]+)\""
             let imgPattern = "src=\"(https://[^\"]+\\.(?:jpg|jpeg|png|webp)[^\"]*)\""
-            if let href = firstMatch(for: hrefPattern, in: content)?[1],
-               let title = firstMatch(for: titlePattern, in: content)?[1],
-               let img = firstMatch(for: imgPattern, in: content)?[1] {
-                // تحسين جودة الصورة بإزالة معاملات resize
+            if let href = firstMatch(for: hrefPattern, in: content),
+               let title = firstMatch(for: titlePattern, in: content),
+               let img = firstMatch(for: imgPattern, in: content) {
                 let cleanImage = img.replacingOccurrences(of: "?resize=247,350", with: "")
                 items.append(AnimeItem(title: title, url: href, imageURL: cleanImage))
             }
@@ -63,10 +62,10 @@ class ScraperManager: NSObject, ObservableObject, WKNavigationDelegate {
         return items
     }
     
-    // 2. جلب تفاصيل الأنمي (مع إعادة تعيين currentDetail قبل البداية)
+    // 2. جلب تفاصيل الأنمي
     func fetchAnimeDetail(from url: String) {
         isLoadingDetail = true
-        currentDetail = nil  // إعادة تعيين لتفادي بقاء البيانات السابقة
+        currentDetail = nil
         guard let requestURL = URL(string: url) else { return }
         URLSession.shared.dataTask(with: requestURL) { data, _, _ in
             guard let data = data, let html = String(data: data, encoding: .utf8) else {
@@ -76,32 +75,35 @@ class ScraperManager: NSObject, ObservableObject, WKNavigationDelegate {
             
             // العنوان
             let titlePattern = "<h1 class=\"entry-title\"[^>]*?>([^<]+)</h1>"
-            let title = self.firstMatch(for: titlePattern, in: html)?[1] ?? "بدون عنوان"
+            let title = self.firstMatch(for: titlePattern, in: html) ?? "بدون عنوان"
             
             // الصورة
             let imgPattern = "<div class=\"thumb\"[^>]*?>.*?<img src=\"([^\"]+)\""
-            let rawImage = self.firstMatch(for: imgPattern, in: html)?[1] ?? ""
+            let rawImage = self.firstMatch(for: imgPattern, in: html) ?? ""
             let cleanImage = rawImage.replacingOccurrences(of: "?resize=247,350", with: "")
             
             // الوصف
             let descPattern = "<div class=\"entry-content\"[^>]*?><p>([^<]+)</p>"
-            let description = self.firstMatch(for: descPattern, in: html)?[1] ?? "لا يوجد وصف"
+            let description = self.firstMatch(for: descPattern, in: html) ?? "لا يوجد وصف"
             
             // التقييم
             let ratingPattern = "<meta itemprop=\"ratingValue\" content=\"([^\"]+)\""
-            let rating = self.firstMatch(for: ratingPattern, in: html)?[1] ?? "0.0"
+            let rating = self.firstMatch(for: ratingPattern, in: html) ?? "0.0"
             
             // الحالة
             let statusPattern = "<span><b>الحالة:</b>([^<]+)</span>"
-            let status = self.firstMatch(for: statusPattern, in: html)?[1]?.trimmingCharacters(in: .whitespaces) ?? "?"
+            var status = self.firstMatch(for: statusPattern, in: html) ?? "?"
+            status = status.trimmingCharacters(in: .whitespaces)
             
             // النوع
             let typePattern = "<span><b>النوع:</b>([^<]+)</span>"
-            let type = self.firstMatch(for: typePattern, in: html)?[1]?.trimmingCharacters(in: .whitespaces) ?? "?"
+            var type = self.firstMatch(for: typePattern, in: html) ?? "?"
+            type = type.trimmingCharacters(in: .whitespaces)
             
             // الاستوديو
             let studioPattern = "<span><b>الاستوديو:</b><a[^>]*?>([^<]+)</a>"
-            let studio = self.firstMatch(for: studioPattern, in: html)?[1]?.trimmingCharacters(in: .whitespaces) ?? "غير معروف"
+            var studio = self.firstMatch(for: studioPattern, in: html) ?? "غير معروف"
+            studio = studio.trimmingCharacters(in: .whitespaces)
             
             // الحلقات
             let epPattern = "class=\"CSB\" id=\"IDSB[^\"]*?\"[^>]*?><span>([^<]+)</span>"
@@ -111,7 +113,6 @@ class ScraperManager: NSObject, ObservableObject, WKNavigationDelegate {
                 let num = ep[1].trimmingCharacters(in: .whitespaces)
                 if !num.isEmpty {
                     var episode = Episode(number: num)
-                    // استخراج السيرفرات للحلقة (سنقوم بجمع كل السيرفرات الموجودة في الصفحة فقط كمثال)
                     let serverPattern = "source=\"ani\" quality-data=\"(FHD|HD|SD)\" data=\"([^\"]+)\" class=\"([^\"]+)\" type=\"([^\"]+)\""
                     let serverMatches = self.matches(for: serverPattern, in: html, options: [])
                     for serv in serverMatches {
@@ -196,7 +197,9 @@ class ScraperManager: NSObject, ObservableObject, WKNavigationDelegate {
         } catch { return [] }
     }
     
-    private func firstMatch(for regex: String, in text: String) -> [String]? {
-        matches(for: regex, in: text, options: [.dotMatchesLineSeparators]).first
+    // دالة محسنة ترجع أول التقاط (group 1) مباشرةً
+    private func firstMatch(for regex: String, in text: String) -> String? {
+        let results = matches(for: regex, in: text, options: [.dotMatchesLineSeparators])
+        return results.first?.dropFirst().first  // أول نتيجة بعد المجموعة الكاملة
     }
 }
