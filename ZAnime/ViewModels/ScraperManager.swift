@@ -15,6 +15,7 @@ class ScraperManager: NSObject, ObservableObject, WKNavigationDelegate {
 
     private var currentDetailURL: String = ""
     private var webViewExtractor: WebViewExtractor?
+    private var isFetchingNextPage = false
 
     override init() {
         super.init()
@@ -40,7 +41,7 @@ class ScraperManager: NSObject, ObservableObject, WKNavigationDelegate {
 
         URLSession.shared.dataTask(with: request) { [weak self] data, response, _ in
             guard let self = self else { return }
-            defer { DispatchQueue.main.async { self.isLoadingList = false } }
+            defer { DispatchQueue.main.async { self.isLoadingList = false; self.isFetchingNextPage = false } }
             guard let data = data, let html = String(data: data, encoding: .utf8) else {
                 DispatchQueue.main.async { self.errorMessage = "فشل تحميل البيانات" }
                 return
@@ -61,7 +62,8 @@ class ScraperManager: NSObject, ObservableObject, WKNavigationDelegate {
     }
 
     func loadNextPage(status: String = "ongoing") {
-        guard hasMorePages && !isLoadingList else { return }
+        guard hasMorePages && !isLoadingList && !isFetchingNextPage else { return }
+        isFetchingNextPage = true
         fetchAnimeList(page: currentPage + 1, status: status)
     }
 
@@ -103,7 +105,7 @@ class ScraperManager: NSObject, ObservableObject, WKNavigationDelegate {
         return items
     }
 
-    // MARK: - 2. تفاصيل الأنمي (إصلاح مشكلة البيانات القديمة + الحلقات)
+    // MARK: - 2. تفاصيل الأنمي (إصلاح مشكلة البيانات القديمة + استخراج الحلقات من HTML الصفحة مباشرة)
     func fetchAnimeDetail(from url: String) {
         // إعادة تعيين البيانات فوراً عند طلب أنمي جديد
         currentDetail = nil
@@ -128,21 +130,15 @@ class ScraperManager: NSObject, ObservableObject, WKNavigationDelegate {
                 // تأكد إن الـ URL لم يتغير (المستخدم لم يفتح أنمي آخر بعد)
                 self.currentDetailURL == url
             else {
-DispatchQueue.main.async { self.isLoadingDetail = false }
+                DispatchQueue.main.async { self.isLoadingDetail = false }
                 return
             }
 
             let detail = self.parseAnimeDetail(from: html)
-            let postID = self.firstCapture(pattern: #"data-id="(\d+)""#, in: html) ?? ""
 
             DispatchQueue.main.async {
                 self.currentDetail = detail
                 self.isLoadingDetail = false
-            }
-
-            // جلب الحلقات عبر AJAX منفصل
-            if !postID.isEmpty {
-                self.fetchEpisodes(postID: postID, animeURL: url)
             }
         }.resume()
     }
@@ -203,6 +199,9 @@ DispatchQueue.main.async { self.isLoadingDetail = false }
             pattern: #"<b>المدة:</b>\s*([^<]+)"#, in: html
         )?.trimmingCharacters(in: .whitespaces) ?? ""
 
+        // الحلقات - يتم استخراجها من داخل <noscript id="diplayer">
+        detail.episodes = self.parseEpisodesDirectly(from: html)
+
         // الأنواع
         let genreMatches = regexMatches(
             pattern: #"class="genxed"[^>]*>(.*?)</div>"#,
@@ -217,103 +216,41 @@ DispatchQueue.main.async { self.isLoadingDetail = false }
         return detail
     }
 
-    // MARK: - جلب الحلقات عبر AJAX (الحل الصحيح للـ cache المفرغ)
-    private func fetchEpisodes(postID: String, animeURL: String) {
-        // WP AJAX endpoint للحلقات - يتجاوز الـ server-side cache
-        guard let ajaxURL = URL(string: "https://animeslayerweb.com/wp-admin/admin-ajax.php") else { return }
-
-        var request = URLRequest(url: ajaxURL)
-        request.httpMethod = "POST"
-        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
-        request.setValue("XMLHttpRequest", forHTTPHeaderField: "X-Requested-With")
-        request.setValue(animeURL, forHTTPHeaderField: "Referer")
-        request.setValue("Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15", forHTTPHeaderField: "User-Agent")
-        request.httpBody = "action=ts_episode_list&post_id=\(postID)".data(using: .utf8)
-
-        URLSession.shared.dataTask(with: request) { [weak self] data, _, _ in
-            guard let self = self, self.currentDetailURL == animeURL else { return }
-            
-            // إذا فشل AJAX، نحاول WP REST API
-            if let data = data, let html = String(data: data, encoding: .utf8), !html.isEmpty && html != "0" && html != "-1" {
-                let episodes = self.parseEpisodeList(from: html)
-                if !episodes.isEmpty {
-                    DispatchQueue.main.async {
-                        self.currentDetail?.episodes = episodes
-                    }
-                    return
-                }
-            }
-            // fallback: WP REST API
-            self.fetchEpisodesViaRESTAPI(postID: postID, animeURL: animeURL)
-        }.resume()
-    }
-
-    private func fetchEpisodesViaRESTAPI(postID: String, animeURL: String) {
-        // جلب الحلقات عبر WP REST API custom endpoint
-        let endpoints = [
-            "https://animeslayerweb.com/wp-json/wp/v2/episode?series=\(postID)&per_page=100&_fields=id,title,link,date,meta",
-            "https://animeslayerweb.com/wp-json/wp/v2/episode?post_parent=\(postID)&per_page=100",
-        ]
-
-        fetchEpisodeFromEndpoints(endpoints, animeURL: animeURL, index: 0)
-    }
-
-    private func fetchEpisodeFromEndpoints(_ endpoints: [String], animeURL: String, index: Int) {
-        guard index < endpoints.count else { return }
-        guard let url = URL(string: endpoints[index]) else {
-            fetchEpisodeFromEndpoints(endpoints, animeURL: animeURL, index: index + 1)
-            return
-        }
-
-        var request = URLRequest(url: url)
-        request.setValue("Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15", forHTTPHeaderField: "User-Agent")
-
-        URLSession.shared.dataTask(with: request) { [weak self] data, response, _ in
-            guard let self = self, self.currentDetailURL == animeURL else { return }
-            if let data = data,
-               let json = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]],
-               !json.isEmpty {
-                let episodes = self.parseEpisodesFromJSON(json)
-                DispatchQueue.main.async {
-                    self.currentDetail?.episodes = episodes
-                }
-            } else {
-                self.fetchEpisodeFromEndpoints(endpoints, animeURL: animeURL, index: index + 1)
-            }
-        }.resume()
-    }
-
-    private func parseEpisodeList(from html: String) -> [Episode] {
+    // MARK: - استخراج الحلقات من <noscript id="diplayer">
+    private func parseEpisodesDirectly(from html: String) -> [Episode] {
         var episodes: [Episode] = []
-        let liPattern = #"<li[^>]*>(.*?)</li>"#
-        let items = regexMatches(pattern: liPattern, in: html, options: [.dotMatchesLineSeparators])
 
-        for item in items {
-            guard let content = item[safe: 1] else { continue }
-            let num = firstCapture(pattern: #"class="[^"]*ep-num[^"]*">([^<]+)"#, in: content)?
-                .trimmingCharacters(in: .whitespaces) ?? ""
-            let title = firstCapture(pattern: #"class="[^"]*ep-title[^"]*">([^<]+)"#, in: content)?
-                .trimmingCharacters(in: .whitespaces) ?? ""
-            let date = firstCapture(pattern: #"class="[^"]*ep-date[^"]*">([^<]+)"#, in: content)?
-                .trimmingCharacters(in: .whitespaces) ?? ""
-            let url = firstCapture(pattern: #"href="([^"]+)""#, in: content) ?? ""
+        // نطاق البحث داخل noscript id="diplayer"
+        let noscriptPattern = #"<noscript id="diplayer"[^>]*>(.*?)</noscript>"#
+        guard let noscriptContent = regexMatches(pattern: noscriptPattern, in: html, options: [.dotMatchesLineSeparators]).first?[safe: 1] else {
+            // إذا لم يوجد noscript، نبحث في كامل الصفحة
+            let altPattern = #"<div class="CSB" id="IDSB\d+"[^>]*?>([^<]+)</div>"#
+            for match in regexMatches(pattern: altPattern, in: html, options: []) {
+                if let text = match[safe: 1] {
+                    let num = text.replacingOccurrences(of: "الحلقة", with: "").trimmingCharacters(in: .whitespaces)
+                    if !num.isEmpty {
+                        episodes.append(Episode(number: num))
+                    }
+                }
+            }
+            return episodes
+        }
 
-            if !num.isEmpty || !url.isEmpty {
-                episodes.append(Episode(number: num, title: title, date: date, url: url))
+        // استخراج أرقام الحلقات من <div class="CSB" id="IDSB...">الحلقة X</div>
+        let epPattern = #"<div class="CSB" id="IDSB\d+"[^>]*?>([^<]+)</div>"#
+        let matches = regexMatches(pattern: epPattern, in: noscriptContent, options: [])
+
+        for match in matches {
+            if let numberText = match[safe: 1] {
+                let rawNumber = numberText.replacingOccurrences(of: "الحلقة", with: "")
+                let trimmed = rawNumber.trimmingCharacters(in: .whitespaces)
+                if !trimmed.isEmpty {
+                    episodes.append(Episode(number: trimmed))
+                }
             }
         }
-        return episodes
-    }
 
-    private func parseEpisodesFromJSON(_ json: [[String: Any]]) -> [Episode] {
-        return json.enumerated().compactMap { (index, item) in
-            let link = item["link"] as? String ?? ""
-            let titleObj = item["title"] as? [String: Any]
-            let title = (titleObj?["rendered"] as? String ?? "").htmlDecoded
-            let date = (item["date"] as? String ?? "").prefix(10).description
-            let num = String(json.count - index)
-            return Episode(number: num, title: title, date: date, url: link)
-        }
+        return episodes
     }
 
     // MARK: - 3. البحث
@@ -353,7 +290,6 @@ DispatchQueue.main.async { self.isLoadingDetail = false }
         isLoadingStream = true
         streamURL = nil
 
-        // جلب صفحة الحلقة واستخراج رابط السيرفر
         guard let episodeURL = URL(string: url) else {
             isLoadingStream = false
             completion(nil)
@@ -374,10 +310,8 @@ DispatchQueue.main.async { self.isLoadingDetail = false }
     // MARK: - Image URL Helper
     private func cleanImageURL(_ url: String) -> String {
         var clean = url
-        // حذف resize parameter للحصول على جودة أعلى
         clean = clean.replacingOccurrences(of: #"\?resize=\d+,\d+"#, with: "", options: .regularExpression)
         clean = clean.replacingOccurrences(of: #"&resize=\d+,\d+"#, with: "", options: .regularExpression)
-        // تحويل wp.com CDN links للأصل
         if clean.contains("i0.wp.com/") || clean.contains("i1.wp.com/") ||
            clean.contains("i2.wp.com/") || clean.contains("i3.wp.com/") {
             clean = clean.replacingOccurrences(of: #"https://i\d\.wp\.com/"#, with: "https://", options: .regularExpression)
