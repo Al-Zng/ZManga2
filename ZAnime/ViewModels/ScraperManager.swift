@@ -128,7 +128,7 @@ class ScraperManager: NSObject, ObservableObject, WKNavigationDelegate {
                 // تأكد إن الـ URL لم يتغير (المستخدم لم يفتح أنمي آخر بعد)
                 self.currentDetailURL == url
             else {
-                DispatchQueue.main.async { self?.isLoadingDetail = false }
+DispatchQueue.main.async { self.isLoadingDetail = false }
                 return
             }
 
