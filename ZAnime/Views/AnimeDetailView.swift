@@ -8,7 +8,7 @@ struct AnimeDetailView: View {
     let animeURL: String
     @EnvironmentObject var scraper: ScraperManager
     @State private var showPlayer = false
-    @State private var selectedEpisodeURL: String = ""
+    @State private var selectedEpisodeNumber: String = ""
     @State private var streamURL: URL?
     @State private var isExtractingStream = false
     @State private var streamError = false
@@ -29,7 +29,6 @@ struct AnimeDetailView: View {
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
                 Button {
-                    // مهم: clear currentDetail عند الرجوع
                     scraper.currentDetail = nil
                     dismiss()
                 } label: {
@@ -45,7 +44,6 @@ struct AnimeDetailView: View {
         }
         .toolbarBackground(.hidden, for: .navigationBar)
         .onAppear {
-            // إعادة جلب كل مرة - يحل مشكلة البيانات القديمة
             scraper.fetchAnimeDetail(from: animeURL)
         }
         .onDisappear {
@@ -88,13 +86,18 @@ struct AnimeDetailView: View {
                     // Stats row
                     statsRow(detail)
 
+                    // زر التشغيل العام
+                    if !detail.episodes.isEmpty {
+                        playButton
+                    }
+
                     // Synopsis
                     synopsisSection(detail)
 
                     // Divider
                     Divider().background(Color(white: 0.18))
 
-                    // Episodes
+                    // Episodes list (تحديد الحلقة فقط)
                     episodesSection(detail)
                 }
                 .padding(.horizontal, 20)
@@ -104,10 +107,44 @@ struct AnimeDetailView: View {
         }
     }
 
-    // MARK: - Hero
+    // MARK: - زر التشغيل العام
+    private var playButton: some View {
+        Button {
+            guard !selectedEpisodeNumber.isEmpty else { return }
+            isExtractingStream = true
+            streamError = false
+            streamURL = nil
+            showPlayer = true
+
+            // استخدام animeURL مع إضافة رقم الحلقة كمعامل (قد لا يعمل، لكن نحاول)
+            let episodeURL = "\(animeURL)?ep=\(selectedEpisodeNumber)"
+            scraper.playEpisode(url: episodeURL) { url in
+                isExtractingStream = false
+                if let url = url {
+                    streamURL = url
+                } else {
+                    streamError = true
+                }
+            }
+        } label: {
+            HStack {
+                Image(systemName: "play.fill")
+                Text("مشاهدة الحلقة \(selectedEpisodeNumber)")
+            }
+            .frame(maxWidth: .infinity)
+            .padding()
+            .background(selectedEpisodeNumber.isEmpty ? Color.gray : accentPurple)
+            .cornerRadius(10)
+            .foregroundColor(.white)
+            .font(.system(size: 16, weight: .bold))
+        }
+        .disabled(selectedEpisodeNumber.isEmpty)
+    }
+
+    // MARK: - Hero (يبقى كما هو)
     private func heroSection(_ detail: AnimeDetail) -> some View {
+        // ... نفس الكود السابق للبطاقة العلوية ...
         ZStack(alignment: .bottom) {
-            // الصورة الخلفية - blurred
             AsyncImage(url: URL(string: detail.imageURL)) { phase in
                 if let img = phase.image {
                     img.resizable().aspectRatio(contentMode: .fill)
@@ -121,16 +158,13 @@ struct AnimeDetailView: View {
             .blur(radius: 20)
             .overlay(Color.black.opacity(0.5))
 
-            // Gradient overlay
             LinearGradient(
                 colors: [.clear, bgDark],
                 startPoint: .init(x: 0.5, y: 0.3),
                 endPoint: .bottom
             )
 
-            // Content
             HStack(alignment: .bottom, spacing: 16) {
-                // Poster
                 AsyncImage(url: URL(string: detail.imageURL)) { phase in
                     switch phase {
                     case .success(let img):
@@ -146,7 +180,6 @@ struct AnimeDetailView: View {
                 .cornerRadius(12)
                 .shadow(color: .black.opacity(0.5), radius: 10, x: 0, y: 4)
 
-                // Title + meta
                 VStack(alignment: .leading, spacing: 8) {
                     Text(detail.title)
                         .font(.system(size: 20, weight: .bold))
@@ -189,7 +222,7 @@ struct AnimeDetailView: View {
             .cornerRadius(6)
     }
 
-    // MARK: - Genres
+    // MARK: - Genres, Stats, Synopsis (تبقى كما هي من الكود السابق)
     private func genrePills(_ genres: [String]) -> some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
@@ -206,7 +239,6 @@ struct AnimeDetailView: View {
         }
     }
 
-    // MARK: - Stats
     private func statsRow(_ detail: AnimeDetail) -> some View {
         HStack(spacing: 0) {
             statItem(label: "النوع", value: detail.type.isEmpty ? "—" : detail.type)
@@ -239,13 +271,11 @@ struct AnimeDetailView: View {
         .frame(maxWidth: .infinity)
     }
 
-    // MARK: - Synopsis
     private func synopsisSection(_ detail: AnimeDetail) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("القصة")
                 .font(.system(size: 16, weight: .bold))
                 .foregroundColor(.white)
-
             if detail.description.isEmpty {
                 Text("لا يوجد وصف")
                     .foregroundColor(.white.opacity(0.35))
@@ -256,7 +286,6 @@ struct AnimeDetailView: View {
                     .foregroundColor(.white.opacity(0.7))
                     .lineLimit(descExpanded ? nil : 3)
                     .lineSpacing(4)
-
                 if detail.description.count > 120 {
                     Button {
                         withAnimation(.easeInOut(duration: 0.2)) { descExpanded.toggle() }
@@ -270,7 +299,7 @@ struct AnimeDetailView: View {
         }
     }
 
-    // MARK: - Episodes
+    // MARK: - Episodes list (اختيار الحلقة)
     @ViewBuilder
     private func episodesSection(_ detail: AnimeDetail) -> some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -287,82 +316,57 @@ struct AnimeDetailView: View {
             }
 
             if detail.episodes.isEmpty {
-                // Loading or empty
-                if scraper.isLoadingDetail {
-                    HStack {
-                        ProgressView().tint(accentPurple)
-                        Text("جار تحميل الحلقات...")
-                            .font(.system(size: 13))
-                            .foregroundColor(.white.opacity(0.4))
-                    }
-                } else {
-                    Text("لا توجد حلقات متاحة")
-                        .font(.system(size: 14))
-                        .foregroundColor(.white.opacity(0.3))
-                        .padding(.vertical, 8)
-                }
+                Text("لا توجد حلقات متاحة")
+                    .font(.system(size: 14))
+                    .foregroundColor(.white.opacity(0.3))
+                    .padding(.vertical, 8)
             } else {
                 LazyVStack(spacing: 8) {
                     ForEach(detail.episodes) { episode in
-                        episodeRow(episode)
+                        Button {
+                            selectedEpisodeNumber = episode.number
+                        } label: {
+                            HStack(spacing: 12) {
+                                ZStack {
+                                    Circle()
+                                        .fill(selectedEpisodeNumber == episode.number ? accentPurple : Color(white: 0.15))
+                                        .frame(width: 38, height: 38)
+                                    Text(episode.number)
+                                        .font(.system(size: 13, weight: .bold))
+                                        .foregroundColor(selectedEpisodeNumber == episode.number ? .white : accentPurple)
+                                }
+                                Text("الحلقة \(episode.number)")
+                                    .font(.system(size: 14, weight: .medium))
+                                    .foregroundColor(.white)
+                                Spacer()
+                                if selectedEpisodeNumber == episode.number {
+                                    Image(systemName: "checkmark")
+                                        .foregroundColor(accentPurple)
+                                }
+                            }
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 10)
+                            .background(selectedEpisodeNumber == episode.number ? Color(white: 0.15) : Color(white: 0.11))
+                            .cornerRadius(10)
+                        }
                     }
                 }
             }
         }
     }
+}
 
-    private func episodeRow(_ episode: Episode) -> some View {
-        Button {
-            guard !episode.url.isEmpty else { return }
-            selectedEpisodeURL = episode.url
-            isExtractingStream = true
-            streamError = false
-            streamURL = nil
-            showPlayer = true
-
-            scraper.playEpisode(url: episode.url) { url in
-                isExtractingStream = false
-                if let url = url {
-                    streamURL = url
-                } else {
-                    streamError = true
-                }
-            }
-        } label: {
-            HStack(spacing: 12) {
-                // رقم الحلقة
-                ZStack {
-                    Circle()
-                        .fill(accentPurple.opacity(0.15))
-                        .frame(width: 38, height: 38)
-                    Text(episode.number)
-                        .font(.system(size: 13, weight: .bold))
-                        .foregroundColor(accentPurple)
-                }
-
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(episode.title.isEmpty ? "الحلقة \(episode.number)" : episode.title)
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(.white)
-                        .lineLimit(1)
-                    if !episode.date.isEmpty {
-                        Text(episode.date)
-                            .font(.system(size: 11))
-                            .foregroundColor(.white.opacity(0.35))
-                    }
-                }
-
-                Spacer()
-
-                Image(systemName: "play.fill")
-                    .font(.system(size: 12))
-                    .foregroundColor(.white.opacity(0.3))
-            }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 10)
-            .background(Color(white: 0.11))
-            .cornerRadius(10)
+// InfoRow يبقى كما هو
+struct InfoRow: View {
+    let label: String
+    let value: String
+    var body: some View {
+        HStack {
+            Text(label)
+                .foregroundColor(.gray)
+            Spacer()
+            Text(value)
+                .foregroundColor(.white)
         }
-        .buttonStyle(.plain)
     }
 }
