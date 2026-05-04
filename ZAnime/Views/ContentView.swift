@@ -1,5 +1,6 @@
 import SwiftUI
 
+@available(iOS 16.0, *)
 struct ContentView: View {
     @StateObject var scraper = ScraperManager()
     @State private var searchText = ""
@@ -13,13 +14,11 @@ struct ContentView: View {
         NavigationStack {
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 20) {
-                    // العرض العلوي المميز
                     if let featured = scraper.animeList.first {
                         FeaturedAnimeCard(anime: featured)
                             .onTapGesture { scraper.fetchAnimeDetail(from: featured.url) }
                     }
                     
-                    // شبكة الانميات
                     Text("جميع الانميات")
                         .font(.title2).bold().foregroundColor(.white).padding(.horizontal)
                     
@@ -41,7 +40,7 @@ struct ContentView: View {
     }
 }
 
-// بطاقة عرض علوية
+@available(iOS 16.0, *)
 struct FeaturedAnimeCard: View {
     let anime: AnimeItem
     var body: some View {
