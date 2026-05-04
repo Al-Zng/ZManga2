@@ -12,7 +12,7 @@ jobs:
       - name: Export IPA
         run: xcodebuild -exportArchive -archivePath ZAnime.xcarchive -exportPath output -exportOptionsPlist ZAnime/ExportOptions.plist CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
       - name: Upload IPA artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4   # <-- تم التحديث من v3 إلى v4
         with:
           name: ZAnime-IPA
           path: output/*.ipa
