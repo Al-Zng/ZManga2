@@ -2,7 +2,6 @@ import SwiftUI
 
 private let accentPurple = Color(red: 0.38, green: 0.18, blue: 0.96)
 private let bgDark = Color(red: 0.07, green: 0.07, blue: 0.10)
-private let cardBg = Color(white: 0.10)
 
 @available(iOS 16.0, *)
 struct ContentView: View {
@@ -90,8 +89,6 @@ struct ContentView: View {
                         .foregroundColor(.white.opacity(0.7))
                 }
                 .disabled(scraper.isLoadingList)
-                .rotationEffect(.degrees(scraper.isLoadingList ? 360 : 0))
-                .animation(scraper.isLoadingList ? .linear(duration: 1).repeatForever(autoreverses: false) : .default, value: scraper.isLoadingList)
             }
         }
         .padding(.horizontal, 20)
@@ -174,10 +171,11 @@ struct ContentView: View {
                         }
                         .buttonStyle(.plain)
                         .onAppear {
-                            // pagination: load next when near end
+                            // تحميل الصفحة التالية فقط عند ظهور العنصر الأخير
                             if !isSearching,
-                               let last = scraper.animeList.last,
-                               last.id == anime.id {
+                               anime.id == scraper.animeList.last?.id,
+                               !scraper.isLoadingList,
+                               scraper.hasMorePages {
                                 scraper.loadNextPage(status: selectedFilter.statusParam)
                             }
                         }
@@ -247,10 +245,9 @@ struct ContentView: View {
     }
 }
 
-// MARK: - Shimmer Effect
+// MARK: - Shimmer Effect (تبقى كما هي)
 struct ShimmerModifier: ViewModifier {
     @State private var phase: CGFloat = 0
-
     func body(content: Content) -> some View {
         content
             .overlay(
