@@ -7,14 +7,27 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A1B2C3D4E5F6G7H8I9J0K1L2 /* ZAnimeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1C2D3E4F5G6H7I8J9K0L1M2; };
-		C1D2E3F4G5H6I7J8K9L0M1N2 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1E2F3G4H5I6J7K8L9M0N1O2; };
+		A1B2C3D4E5F6G7H8I9J0K1L2 /* ZAnimeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = ZA01; };
+		C1D2E3F4G5H6I7J8K9L0M1N2 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ZV01; };
+		D1E2F3G4H5I6J7K8L9M0N1O2 /* AnimeModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = ZM01; };
+		E1F2G3H4I5J6K7L8M9N0O1P2 /* ScraperManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = ZVM01; };
+		F1G2H3I4J5K6L7M8N9O0P1Q2 /* AnimeCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ZV02; };
+		G1H2I3J4K5L6M7N8O9P0Q1R2 /* AnimeDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ZV03; };
+		H1I2J3K4L5M6N7O8P9Q0R1S2 /* PlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ZV04; };
+		I1J2K3L4M5N6O7P8Q9R0S1T2 /* WebViewExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = ZU01; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		B1C2D3E4F5G6H7I8J9K0L1M2 /* ZAnimeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZAnimeApp.swift; sourceTree = "<group>"; };
-		D1E2F3G4H5I6J7K8L9M0N1O2 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		E1F2G3H4I5J6K7L8M9N0O1P2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		ZA01 /* ZAnimeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZAnimeApp.swift; sourceTree = "<group>"; };
+		ZA02 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		ZA03 /* ExportOptions.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = ExportOptions.plist; sourceTree = "<group>"; };
+		ZM01 /* AnimeModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimeModels.swift; sourceTree = "<group>"; };
+		ZVM01 /* ScraperManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScraperManager.swift; sourceTree = "<group>"; };
+		ZV01 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		ZV02 /* AnimeCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimeCardView.swift; sourceTree = "<group>"; };
+		ZV03 /* AnimeDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimeDetailView.swift; sourceTree = "<group>"; };
+		ZV04 /* PlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerView.swift; sourceTree = "<group>"; };
+		ZU01 /* WebViewExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewExtractor.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -31,11 +44,54 @@
 		4A5B6C7D8E9F0G1H2I3J4K5L = {
 			isa = PBXGroup;
 			children = (
-				B1C2D3E4F5G6H7I8J9K0L1M2 /* ZAnimeApp.swift */,
-				D1E2F3G4H5I6J7K8L9M0N1O2 /* ContentView.swift */,
-				E1F2G3H4I5J6K7L8M9N0O1P2 /* Info.plist */,
+				ZA01 /* ZAnimeApp.swift */,
+				ZA02 /* Info.plist */,
+				ZA03 /* ExportOptions.plist */,
+				ZM_GROUP /* Models */,
+				ZVM_GROUP /* ViewModels */,
+				ZV_GROUP /* Views */,
+				ZU_GROUP /* Utils */,
 			);
 			path = "ZAnime";
+			sourceTree = "<group>";
+		};
+
+		ZM_GROUP /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				ZM01 /* AnimeModels.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+
+		ZVM_GROUP /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				ZVM01 /* ScraperManager.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+
+		ZV_GROUP /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				ZV01 /* ContentView.swift */,
+				ZV02 /* AnimeCardView.swift */,
+				ZV03 /* AnimeDetailView.swift */,
+				ZV04 /* PlayerView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+
+		ZU_GROUP /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				ZU01 /* WebViewExtractor.swift */,
+			);
+			path = Utils;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -88,6 +144,12 @@
 			files = (
 				A1B2C3D4E5F6G7H8I9J0K1L2 /* ZAnimeApp.swift in Sources */,
 				C1D2E3F4G5H6I7J8K9L0M1N2 /* ContentView.swift in Sources */,
+				D1E2F3G4H5I6J7K8L9M0N1O2 /* AnimeModels.swift in Sources */,
+				E1F2G3H4I5J6K7L8M9N0O1P2 /* ScraperManager.swift in Sources */,
+				F1G2H3I4J5K6L7M8N9O0P1Q2 /* AnimeCardView.swift in Sources */,
+				G1H2I3J4K5L6M7N8O9P0Q1R2 /* AnimeDetailView.swift in Sources */,
+				H1I2J3K4L5M6N7O8P9Q0R1S2 /* PlayerView.swift in Sources */,
+				I1J2K3L4M5N6O7P8Q9R0S1T2 /* WebViewExtractor.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
