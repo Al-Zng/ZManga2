@@ -1,0 +1,79 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 54;
+	objects = {
+		1A2B3C4D5E6F7G8H9I0J1K2L /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				TargetAttributes = {
+					2A3B4C5D6E7F8G9H0I1J2K3L = {
+						CreatedOnToolsVersion = 14.0;
+					};
+				};
+			};
+			buildConfigurationList = 3A4B5C6D7E8F9G0H1I2J3K4L /* Build configuration list for PBXProject "ZAnime" */;
+			compatibilityVersion = "Xcode 13.0";
+			hasScannedForEncodings = 0;
+			mainGroup = 4A5B6C7D8E9F0G1H2I3J4K5L;
+			productRefGroup = 4A5B6C7D8E9F0G1H2I3J4K5L;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				2A3B4C5D6E7F8G9H0I1J2K3L /* ZAnime */,
+			);
+		};
+		2A3B4C5D6E7F8G9H0I1J2K3L /* ZAnime */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5A6B7C8D9E0F1G2H3I4J5K6L;
+			buildPhases = ();
+			buildRules = ();
+			dependencies = ();
+			name = ZAnime;
+			productName = ZAnime;
+			productType = "com.apple.product-type.application";
+		};
+		3A4B5C6D7E8F9G0H1I2J3K4L = {
+			isa = XCConfigurationList;
+			buildConfigurations = ( 6A7B8C9D0E1F2G3H4I5J6K7L );
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		5A6B7C8D9E0F1G2H3I4J5K6L = {
+			isa = XCConfigurationList;
+			buildConfigurations = ( 7A8B9C0D1E2F3G4H5I6J7K8L );
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		6A7B8C9D0E1F2G3H4I5J6K7L = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				SDKROOT = iphoneos;
+			};
+			name = Release;
+		};
+		7A8B9C0D1E2F3G4H5I6J7K8L = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "";
+				CODE_SIGNING_REQUIRED = NO;
+				CODE_SIGNING_ALLOWED = NO;
+				INFOPLIST_FILE = ZAnime/Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = com.9r7n.ZAnime;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		4A5B6C7D8E9F0G1H2I3J4K5L = {
+			isa = PBXGroup;
+			children = ();
+			sourceTree = "<group>";
+		};
+	};
+	rootObject = 1A2B3C4D5E6F7G8H9I0J1K2L /* Project object */;
+}
