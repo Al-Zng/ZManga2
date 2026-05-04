@@ -1,6 +1,6 @@
 import Foundation
 
-// MARK: - نموذج انمي في القائمة الرئيسية
+// MARK: - نموذج الأنمي في القائمة الرئيسية
 struct AnimeItem: Identifiable, Codable {
     var id = UUID()
     let title: String
@@ -10,7 +10,7 @@ struct AnimeItem: Identifiable, Codable {
     var type: String = "مسلسل"
 }
 
-// MARK: - نموذج تفاصيل الانمي (مع حلقات)
+// MARK: - تفاصيل الأنمي
 struct AnimeDetail {
     var imageURL: String
     var title: String
@@ -19,17 +19,18 @@ struct AnimeDetail {
     var status: String = "مكتمل"
     var type: String = "مسلسل"
     var releaseYear: String = ""
+    var studio: String = "غير معروف"
     var episodes: [Episode] = []
 }
 
-// MARK: - نموذج الحلقة
+// MARK: - الحلقة
 struct Episode: Identifiable {
     var id = UUID()
     var number: String
     var servers: [Server] = []
 }
 
-// MARK: - نموذج السيرفر
+// MARK: - السيرفر
 struct Server: Identifiable {
     var id = UUID()
     var name: String
