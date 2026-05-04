@@ -8,8 +8,7 @@ class ScraperManager: NSObject, ObservableObject, WKNavigationDelegate {
     @Published var streamURL: URL?
     @Published var isLoadingDetail = false
     @Published var isLoadingStream = false
-    @Published var errorMessage: String? = nil // لإظهار أخطاء الشبكة
-    
+    @Published var errorMessage: String? = nil
     var currentServerType = ""
     
     private var webView: WKWebView?
@@ -26,7 +25,7 @@ class ScraperManager: NSObject, ObservableObject, WKNavigationDelegate {
         webView?.navigationDelegate = self
     }
     
-    // 1. جلب الأنميات الشائعة (محسّنة)
+    // 1. جلب الأنميات الشائعة (المستمرة) من الصفحة الرئيسية
     func fetchPopularAnime() {
         errorMessage = nil
         guard let url = URL(string: "https://animeslayerweb.com/anime/?status=ongoing") else { return }
@@ -36,74 +35,60 @@ class ScraperManager: NSObject, ObservableObject, WKNavigationDelegate {
                 DispatchQueue.main.async { self.errorMessage = "فشل الاتصال: \(error.localizedDescription)" }
                 return
             }
-            
             guard let data = data, let html = String(data: data, encoding: .utf8) else {
                 DispatchQueue.main.async { self.errorMessage = "لم يتم استقبال بيانات" }
                 return
             }
-            
-            // تجربة استخراج البيانات
-            let extractedItems = self.extractAnimeItems(from: html)
+            let extracted = self.extractAnimeItems(from: html)
             DispatchQueue.main.async {
-                if extractedItems.isEmpty {
-                    self.errorMessage = "لم يتم العثور على أي أنمي. تأكد من اتصال الإنترنت أو تغير هيكل الموقع."
+                if extracted.isEmpty {
+                    self.errorMessage = "لم يتم العثور على أي أنمي."
                 } else {
-                    self.animeList = extractedItems
+                    self.animeList = extracted
                     self.errorMessage = nil
                 }
             }
         }.resume()
     }
     
-    // دالة استخراج الأنميات من HTML (طريقتين)
+    // دالة استخراج عامة تُستخدم لكل الصفحات
     private func extractAnimeItems(from html: String) -> [AnimeItem] {
         var items: [AnimeItem] = []
         
-        // 1. نبحث عن جميع أقسام المقالات
+        // 1. استخراج جميع <article class="bs dd1"> ... </article>
         let articlePattern = "<article class=\"bs dd1\"[^>]*?>(.*?)</article>"
-        let articles = self.matches(for: articlePattern, in: html, options: [.dotMatchesLineSeparators])
+        let articles = matches(for: articlePattern, in: html, options: [.dotMatchesLineSeparators])
         
         for articleHTML in articles {
-            guard let articleContent = articleHTML.first else { continue }
+            guard let block = articleHTML.first else { continue }
             
-            // استخراج href
-            let hrefPattern = "href=\"([^\"]+)\""
-            let href = firstMatch(for: hrefPattern, in: articleContent)
+            // 2. استخراج href و title من <a>
+            let linkPattern = "<a href=\"([^\"]+)\"[^>]*?title=\"([^\"]*?)\""
+            let linkMatch = firstMatch(for: linkPattern, in: block)
+            guard let href = linkMatch?[1], let title = linkMatch?[2], !title.isEmpty else { continue }
             
-            // استخراج العنوان من oldtitle
-            let oldtitlePattern = "oldtitle=\"([^\"]+)\""
-            var title = firstMatch(for: oldtitlePattern, in: articleContent) ?? ""
-            
-            // إذا لم نجد oldtitle، نبحث عن h2
-            if title.isEmpty {
-                let h2Pattern = "<h2[^>]*?>([^<]+)</h2>"
-                title = firstMatch(for: h2Pattern, in: articleContent) ?? ""
-            }
-            
-            // استخراج الصورة
+            // 3. استخراج src الصورة (داخل <img>)
             let imgPattern = "src=\"(https://[^\"]+?\\.(?:jpg|png|jpeg|webp)[^\"]*)\""
-            let imageURL = firstMatch(for: imgPattern, in: articleContent) ?? ""
+            let imgURL = firstMatch(for: imgPattern, in: block)?[1] ?? ""
             
-            if let href = href, !title.isEmpty {
-                items.append(AnimeItem(title: title, url: href, imageURL: imageURL))
-            }
+            let item = AnimeItem(title: title, url: href, imageURL: imgURL)
+            items.append(item)
         }
         
-        // إذا لم نعثر على شيء، نجرب النمط القديم كخطة بديلة
+        // إذا لم ينجح النمط أعلاه، نجرب نمطًا بديلًا بسيطًا (للحالات النادرة)
         if items.isEmpty {
-            let oldPattern = "<div class=\"bsx\"><a href=\"([^\"]+)\"[^>]*?oldtitle=\"([^\"]+)\"[^>]*?>.*?<img src=\"([^\"]+)\"[^>]*?>"
-            let res = matches(for: oldPattern, in: html, options: [.dotMatchesLineSeparators])
-            for r in res {
-                if r.count == 3 {
-                    items.append(AnimeItem(title: r[1], url: r[0], imageURL: r[2]))
+            let simplePattern = "<div class=\"bsx\"><a href=\"([^\"]+)\"[^>]*?title=\"([^\"]+)\"[^>]*?>.*?<img src=\"([^\"]+)\""
+            let simpleMatches = matches(for: simplePattern, in: html, options: [.dotMatchesLineSeparators])
+            for match in simpleMatches {
+                if match.count == 4 {
+                    items.append(AnimeItem(title: match[2], url: match[1], imageURL: match[3]))
                 }
             }
         }
-        
         return items
     }
     
-    // 2. جلب تفاصيل أنمي (لم تتغير)
+    // 2. جلب تفاصيل أنمي (محسنة)
     func fetchAnimeDetail(from url: String) {
         isLoadingDetail = true
         guard let requestURL = URL(string: url) else { return }
@@ -113,30 +98,36 @@ class ScraperManager: NSObject, ObservableObject, WKNavigationDelegate {
                 return
             }
             
+            // استخراج العنوان
             let titlePattern = "<h1 class=\"entry-title\"[^>]*?>([^<]+)</h1>"
-            let title = self.firstMatch(for: titlePattern, in: html) ?? "بدون عنوان"
+            let title = self.firstMatch(for: titlePattern, in: html)?[1] ?? "بدون عنوان"
             
-            let imgPattern = "<div class=\"thumb\"[^>]*?>.*?<img src=\"([^\"]+)\"[^>]*?>"
-            let imageURL = self.firstMatch(for: imgPattern, in: html) ?? ""
+            // استخراج الصورة الرئيسية
+            let imgPattern = "<div class=\"thumb\"[^>]*?>.*?<img src=\"([^\"]+)\""
+            let imageURL = self.firstMatch(for: imgPattern, in: html)?[1] ?? ""
             
+            // استخراج الوصف
             let descPattern = "<div class=\"entry-content\"[^>]*?><p>([^<]+)</p>"
-            let description = self.firstMatch(for: descPattern, in: html) ?? "لا يوجد وصف"
+            let description = self.firstMatch(for: descPattern, in: html)?[1] ?? "لا يوجد وصف"
             
-            let epsPattern = "class=\"CSB\" id=\"IDSB[^\"]*?\"><span>الحلقة ([^<]+)</span>"
+            // استخراج أرقام الحلقات
+            let epsPattern = "class=\"CSB\"[^>]*?><span>الحلقة ([^<]+)</span>"
             let epsNumbers = self.matches(for: epsPattern, in: html, options: [])
             
+            // استخراج السيرفرات
             let serverPattern = "source=\"ani\" quality-data=\"(FHD|HD|SD)\" data=\"([^\"]+)\" class=\"([^\"]+)\" type=\"([^\"]+)\""
             let serverMatches = self.matches(for: serverPattern, in: html, options: [])
             
             var episodes: [Episode] = []
-            for epNum in epsNumbers.prefix(5) {
-                var episode = Episode(number: epNum.first ?? "1")
+            for epNum in epsNumbers {
+                let num = epNum.count > 1 ? epNum[1] : (epNum.first ?? "1")
+                var ep = Episode(number: num)
                 for serv in serverMatches {
-                    if serv.count >= 4 {
-                        episode.servers.append(Server(name: serv[2], quality: serv[0], dataCode: serv[1], type: serv[3]))
+                    if serv.count >= 5 { // full match + 3 groups (quality, data, type)
+                        ep.servers.append(Server(name: serv[4], quality: serv[1], dataCode: serv[2], type: serv[4]))
                     }
                 }
-                episodes.append(episode)
+                episodes.append(ep)
             }
             
             DispatchQueue.main.async {
@@ -144,10 +135,10 @@ class ScraperManager: NSObject, ObservableObject, WKNavigationDelegate {
                     imageURL: imageURL,
                     title: title,
                     description: description,
-                    rating: "8.9",
-                    status: "مستمر",
-                    type: "مسلسل",
-                    releaseYear: "2024",
+                    rating: "?",
+                    status: "?",
+                    type: "?",
+                    releaseYear: "",
                     episodes: episodes
                 )
                 self.isLoadingDetail = false
@@ -155,24 +146,20 @@ class ScraperManager: NSObject, ObservableObject, WKNavigationDelegate {
         }.resume()
     }
     
-    // 3. تشغيل حلقة (لم تتغير)
+    // 3. تشغيل حلقة (مؤقت)
     func playEpisode(server: Server) {
         isLoadingStream = true
         currentServerType = server.type
-        guard let webView = webView else { return }
-        let urlString = "https://animeslayerweb.com/anime/"
-        if let url = URL(string: urlString) {
-            webView.load(URLRequest(url: url))
-        }
+        guard let url = URL(string: "https://animeslayerweb.com/anime/") else { return }
+        webView?.load(URLRequest(url: url))
     }
     
-    // MARK: - WKNavigationDelegate
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         let js = "document.body.innerHTML.match(/(https?:\\/\\/[^'\"\\s]+\\.(m3u8|mp4))/g)"
         webView.evaluateJavaScript(js) { result, error in
-            if let urls = result as? [String], let firstURL = urls.first {
+            if let urls = result as? [String], let first = urls.first {
                 DispatchQueue.main.async {
-                    self.streamURL = URL(string: firstURL)
+                    self.streamURL = URL(string: first)
                     self.isLoadingStream = false
                 }
             } else {
@@ -181,7 +168,7 @@ class ScraperManager: NSObject, ObservableObject, WKNavigationDelegate {
         }
     }
     
-    // أدوات مساعدة لـ Regex (مُحسَّنة)
+    // أدوات Regex محسّنة
     private func matches(for regex: String, in text: String, options: NSRegularExpression.Options) -> [[String]] {
         do {
             let regex = try NSRegularExpression(pattern: regex, options: options)
@@ -195,8 +182,7 @@ class ScraperManager: NSObject, ObservableObject, WKNavigationDelegate {
         } catch { return [] }
     }
     
-    private func firstMatch(for regex: String, in text: String) -> String? {
-        let res = matches(for: regex, in: text, options: [.dotMatchesLineSeparators])
-        return res.first?.first
+    private func firstMatch(for regex: String, in text: String) -> [String]? {
+        return matches(for: regex, in: text, options: [.dotMatchesLineSeparators]).first
     }
 }
