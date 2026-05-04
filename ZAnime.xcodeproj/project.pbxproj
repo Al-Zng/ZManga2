@@ -7,102 +7,55 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A1B2C3D4E5F6G7H8I9J0K1L2 /* ZAnimeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = ZA01; };
-		C1D2E3F4G5H6I7J8K9L0M1N2 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ZV01; };
-		D1E2F3G4H5I6J7K8L9M0N1O2 /* AnimeModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = ZM01; };
-		E1F2G3H4I5J6K7L8M9N0O1P2 /* ScraperManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = ZVM01; };
-		F1G2H3I4J5K6L7M8N9O0P1Q2 /* AnimeCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ZV02; };
-		G1H2I3J4K5L6M7N8O9P0Q1R2 /* AnimeDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ZV03; };
-		H1I2J3K4L5M6N7O8P9Q0R1S2 /* PlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ZV04; };
-		I1J2K3L4M5N6O7P8Q9R0S1T2 /* WebViewExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = ZU01; };
+		12340001ABCDEF000000001 /* ZAnimeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12340001ABCDEF000000101; };
+		12340001ABCDEF000000002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12340001ABCDEF000000102; };
+		12340001ABCDEF000000003 /* AnimeModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12340001ABCDEF000000103; };
+		12340001ABCDEF000000004 /* ScraperManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12340001ABCDEF000000104; };
+		12340001ABCDEF000000005 /* AnimeCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12340001ABCDEF000000105; };
+		12340001ABCDEF000000006 /* AnimeDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12340001ABCDEF000000106; };
+		12340001ABCDEF000000007 /* PlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12340001ABCDEF000000107; };
+		12340001ABCDEF000000008 /* WebViewExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12340001ABCDEF000000108; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		ZA01 /* ZAnimeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZAnimeApp.swift; sourceTree = "<group>"; };
-		ZA02 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		ZA03 /* ExportOptions.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = ExportOptions.plist; sourceTree = "<group>"; };
-		ZM01 /* AnimeModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimeModels.swift; sourceTree = "<group>"; };
-		ZVM01 /* ScraperManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScraperManager.swift; sourceTree = "<group>"; };
-		ZV01 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		ZV02 /* AnimeCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimeCardView.swift; sourceTree = "<group>"; };
-		ZV03 /* AnimeDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimeDetailView.swift; sourceTree = "<group>"; };
-		ZV04 /* PlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerView.swift; sourceTree = "<group>"; };
-		ZU01 /* WebViewExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewExtractor.swift; sourceTree = "<group>"; };
+		12340001ABCDEF000000101 /* ZAnimeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZAnimeApp.swift; sourceTree = "<group>"; };
+		12340001ABCDEF000000102 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/ContentView.swift; sourceTree = "<group>"; };
+		12340001ABCDEF000000103 /* AnimeModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/AnimeModels.swift; sourceTree = "<group>"; };
+		12340001ABCDEF000000104 /* ScraperManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/ScraperManager.swift; sourceTree = "<group>"; };
+		12340001ABCDEF000000105 /* AnimeCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/AnimeCardView.swift; sourceTree = "<group>"; };
+		12340001ABCDEF000000106 /* AnimeDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/AnimeDetailView.swift; sourceTree = "<group>"; };
+		12340001ABCDEF000000107 /* PlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/PlayerView.swift; sourceTree = "<group>"; };
+		12340001ABCDEF000000108 /* WebViewExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils/WebViewExtractor.swift; sourceTree = "<group>"; };
+		12340001ABCDEF000000201 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		12340001ABCDEF000000202 /* ExportOptions.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = ExportOptions.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
-/* Begin PBXFrameworksBuildPhase section */
-		F1G2H3I4J5K6L7M8N9O0P1Q2 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXFrameworksBuildPhase section */
-
 /* Begin PBXGroup section */
-		4A5B6C7D8E9F0G1H2I3J4K5L = {
+		12340001ABCDEF000000301 = {
 			isa = PBXGroup;
 			children = (
-				ZA01 /* ZAnimeApp.swift */,
-				ZA02 /* Info.plist */,
-				ZA03 /* ExportOptions.plist */,
-				ZM_GROUP /* Models */,
-				ZVM_GROUP /* ViewModels */,
-				ZV_GROUP /* Views */,
-				ZU_GROUP /* Utils */,
+				12340001ABCDEF000000101 /* ZAnimeApp.swift */,
+				12340001ABCDEF000000102 /* ContentView.swift */,
+				12340001ABCDEF000000103 /* AnimeModels.swift */,
+				12340001ABCDEF000000104 /* ScraperManager.swift */,
+				12340001ABCDEF000000105 /* AnimeCardView.swift */,
+				12340001ABCDEF000000106 /* AnimeDetailView.swift */,
+				12340001ABCDEF000000107 /* PlayerView.swift */,
+				12340001ABCDEF000000108 /* WebViewExtractor.swift */,
+				12340001ABCDEF000000201 /* Info.plist */,
+				12340001ABCDEF000000202 /* ExportOptions.plist */,
 			);
 			path = "ZAnime";
-			sourceTree = "<group>";
-		};
-
-		ZM_GROUP /* Models */ = {
-			isa = PBXGroup;
-			children = (
-				ZM01 /* AnimeModels.swift */,
-			);
-			path = Models;
-			sourceTree = "<group>";
-		};
-
-		ZVM_GROUP /* ViewModels */ = {
-			isa = PBXGroup;
-			children = (
-				ZVM01 /* ScraperManager.swift */,
-			);
-			path = ViewModels;
-			sourceTree = "<group>";
-		};
-
-		ZV_GROUP /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				ZV01 /* ContentView.swift */,
-				ZV02 /* AnimeCardView.swift */,
-				ZV03 /* AnimeDetailView.swift */,
-				ZV04 /* PlayerView.swift */,
-			);
-			path = Views;
-			sourceTree = "<group>";
-		};
-
-		ZU_GROUP /* Utils */ = {
-			isa = PBXGroup;
-			children = (
-				ZU01 /* WebViewExtractor.swift */,
-			);
-			path = Utils;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		2A3B4C5D6E7F8G9H0I1J2K3L /* ZAnime */ = {
+		12340001ABCDEF000000401 /* ZAnime */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 5A6B7C8D9E0F1G2H3I4J5K6L;
+			buildConfigurationList = 12340001ABCDEF000000501;
 			buildPhases = (
-				G1H2I3J4K5L6M7N8O9P0Q1R2 /* Sources */,
-				F1G2H3I4J5K6L7M8N9O0P1Q2 /* Frameworks */,
+				12340001ABCDEF000000601 /* Sources */,
 			);
 			buildRules = (
 			);
@@ -115,48 +68,48 @@
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		1A2B3C4D5E6F7G8H9I0J1K2L /* Project object */ = {
+		12340001ABCDEF000000701 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
 				TargetAttributes = {
-					2A3B4C5D6E7F8G9H0I1J2K3L = {
+					12340001ABCDEF000000401 = {
 						CreatedOnToolsVersion = 14.0;
 					};
 				};
 			};
-			buildConfigurationList = 3A4B5C6D7E8F9G0H1I2J3K4L;
+			buildConfigurationList = 12340001ABCDEF000000801;
 			compatibilityVersion = "Xcode 13.0";
 			hasScannedForEncodings = 0;
-			mainGroup = 4A5B6C7D8E9F0G1H2I3J4K5L;
-			productRefGroup = 4A5B6C7D8E9F0G1H2I3J4K5L;
+			mainGroup = 12340001ABCDEF000000301;
+			productRefGroup = 12340001ABCDEF000000301;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				2A3B4C5D6E7F8G9H0I1J2K3L,
+				12340001ABCDEF000000401,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
-		G1H2I3J4K5L6M7N8O9P0Q1R2 /* Sources */ = {
+		12340001ABCDEF000000601 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A1B2C3D4E5F6G7H8I9J0K1L2 /* ZAnimeApp.swift in Sources */,
-				C1D2E3F4G5H6I7J8K9L0M1N2 /* ContentView.swift in Sources */,
-				D1E2F3G4H5I6J7K8L9M0N1O2 /* AnimeModels.swift in Sources */,
-				E1F2G3H4I5J6K7L8M9N0O1P2 /* ScraperManager.swift in Sources */,
-				F1G2H3I4J5K6L7M8N9O0P1Q2 /* AnimeCardView.swift in Sources */,
-				G1H2I3J4K5L6M7N8O9P0Q1R2 /* AnimeDetailView.swift in Sources */,
-				H1I2J3K4L5M6N7O8P9Q0R1S2 /* PlayerView.swift in Sources */,
-				I1J2K3L4M5N6O7P8Q9R0S1T2 /* WebViewExtractor.swift in Sources */,
+				12340001ABCDEF000000001 /* ZAnimeApp.swift in Sources */,
+				12340001ABCDEF000000002 /* ContentView.swift in Sources */,
+				12340001ABCDEF000000003 /* AnimeModels.swift in Sources */,
+				12340001ABCDEF000000004 /* ScraperManager.swift in Sources */,
+				12340001ABCDEF000000005 /* AnimeCardView.swift in Sources */,
+				12340001ABCDEF000000006 /* AnimeDetailView.swift in Sources */,
+				12340001ABCDEF000000007 /* PlayerView.swift in Sources */,
+				12340001ABCDEF000000008 /* WebViewExtractor.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		6A7B8C9D0E1F2G3H4I5J6K7L = {
+		12340001ABCDEF000000901 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
@@ -164,7 +117,7 @@
 			};
 			name = Release;
 		};
-		7A8B9C0D1E2F3G4H5I6J7K8L = {
+		12340001ABCDEF000000902 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -181,23 +134,23 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		3A4B5C6D7E8F9G0H1I2J3K4L = {
+		12340001ABCDEF000000801 /* Build configuration list for PBXProject "ZAnime" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				6A7B8C9D0E1F2G3H4I5J6K7L,
+				12340001ABCDEF000000901,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		5A6B7C8D9E0F1G2H3I4J5K6L = {
+		12340001ABCDEF000000501 /* Build configuration list for PBXNativeTarget "ZAnime" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				7A8B9C0D1E2F3G4H5I6J7K8L,
+				12340001ABCDEF000000902,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
-	rootObject = 1A2B3C4D5E6F7G8H9I0J1K2L /* Project object */;
+	rootObject = 12340001ABCDEF000000701 /* Project object */;
 }
