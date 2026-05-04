@@ -35,6 +35,7 @@
 				D1E2F3G4H5I6J7K8L9M0N1O2 /* ContentView.swift */,
 				E1F2G3H4I5J6K7L8M9N0O1P2 /* Info.plist */,
 			);
+			path = "ZAnime";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
