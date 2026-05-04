@@ -2,7 +2,7 @@ import Foundation
 
 // MARK: - نموذج انمي في القائمة الرئيسية
 struct AnimeItem: Identifiable, Codable {
-    let id = UUID()
+    var id = UUID()
     let title: String
     let url: String
     let imageURL: String
@@ -34,6 +34,6 @@ struct Server: Identifiable {
     var id = UUID()
     var name: String
     var quality: String
-    var dataCode: String // الكود الخاص بالسيرفر (ليتم تحويله لرابط)
-    var type: String // mega, ok, 4shared..
+    var dataCode: String
+    var type: String
 }
