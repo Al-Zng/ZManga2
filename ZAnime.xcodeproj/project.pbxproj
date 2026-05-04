@@ -128,6 +128,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.9r7n.ZAnime;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 			};
 			name = Release;
 		};
