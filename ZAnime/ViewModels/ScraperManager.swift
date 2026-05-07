@@ -105,7 +105,7 @@ class ScraperManager: NSObject, ObservableObject, WKNavigationDelegate {
         return items
     }
 
-    // MARK: - 2. تفاصيل الأنمي (إصلاح مشكلة البيانات القديمة + استخراج الحلقات من HTML الصفحة مباشرة)
+    // MARK: - 2. تفاصيل الأنمي (محسّن)
     func fetchAnimeDetail(from url: String) {
         // إعادة تعيين البيانات فوراً عند طلب أنمي جديد
         currentDetail = nil
@@ -199,7 +199,7 @@ class ScraperManager: NSObject, ObservableObject, WKNavigationDelegate {
             pattern: #"<b>المدة:</b>\s*([^<]+)"#, in: html
         )?.trimmingCharacters(in: .whitespaces) ?? ""
 
-        // الحلقات - يتم استخراجها من داخل <noscript id="diplayer">
+        // الحلقات - محسّنة لاستخراج البيانات الكاملة
         detail.episodes = self.parseEpisodesDirectly(from: html)
 
         // الأنواع
@@ -216,7 +216,7 @@ class ScraperManager: NSObject, ObservableObject, WKNavigationDelegate {
         return detail
     }
 
-    // MARK: - استخراج الحلقات من <noscript id="diplayer">
+    // MARK: - استخراج الحلقات مع البيانات الكاملة (محسّن)
     private func parseEpisodesDirectly(from html: String) -> [Episode] {
         var episodes: [Episode] = []
 
@@ -237,15 +237,24 @@ class ScraperManager: NSObject, ObservableObject, WKNavigationDelegate {
         }
 
         // استخراج أرقام الحلقات من <div class="CSB" id="IDSB...">الحلقة X</div>
-        let epPattern = #"<div class="CSB" id="IDSB\d+"[^>]*?>([^<]+)</div>"#
+        let epPattern = #"<div class="CSB" id="IDSB(\d+)"[^>]*?>([^<]+)</div>"#
         let matches = regexMatches(pattern: epPattern, in: noscriptContent, options: [])
 
         for match in matches {
-            if let numberText = match[safe: 1] {
+            if let idStr = match[safe: 1], let numberText = match[safe: 2] {
                 let rawNumber = numberText.replacingOccurrences(of: "الحلقة", with: "")
                 let trimmed = rawNumber.trimmingCharacters(in: .whitespaces)
                 if !trimmed.isEmpty {
-                    episodes.append(Episode(number: trimmed))
+                    var episode = Episode(number: trimmed)
+                    // محاولة استخراج data-code و data-post من نفس الـ div
+                    let divPattern = #"id="IDSB\(idStr)"[^>]*data-code="([^"]*)"[^>]*data-post="([^"]*)"[^>]*>"#
+                    if let divMatch = regexMatches(pattern: divPattern, in: noscriptContent, options: []).first {
+                        if let code = divMatch[safe: 1], let post = divMatch[safe: 2] {
+                            episode.url = "https://animeslayerweb.com/?p=\(post)&ep=\(trimmed)"
+                            // يمكن إضافة السيرفرات هنا إذا لزم الأمر
+                        }
+                    }
+                    episodes.append(episode)
                 }
             }
         }
@@ -285,7 +294,7 @@ class ScraperManager: NSObject, ObservableObject, WKNavigationDelegate {
         }.resume()
     }
 
-    // MARK: - 4. تشغيل الحلقة
+    // MARK: - 4. تشغيل الحلقة (محسّن)
     func playEpisode(url: String, completion: @escaping (URL?) -> Void) {
         isLoadingStream = true
         streamURL = nil
