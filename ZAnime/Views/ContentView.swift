@@ -10,6 +10,7 @@ struct ContentView: View {
     @State private var isSearching = false
     @State private var selectedFilter: AnimeFilter = .ongoing
     @FocusState private var searchFocused: Bool
+    @State private var scrollPosition: String? = nil
 
     enum AnimeFilter: String, CaseIterable {
         case ongoing = "يعرض الآن"
@@ -152,43 +153,54 @@ struct ContentView: View {
         .padding(.bottom, 4)
     }
 
-    // MARK: - Grid
+    // MARK: - Grid (محسّن لحل مشكلة التمرير)
     private var animeGrid: some View {
-        ScrollView {
-            if scraper.isLoadingList && scraper.animeList.isEmpty {
-                loadingGrid
-            } else {
-                LazyVGrid(
-                    columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 3),
-                    spacing: 14
-                ) {
-                    ForEach(scraper.animeList) { anime in
-                        NavigationLink(
-                            destination: AnimeDetailView(animeURL: anime.url)
-                                .environmentObject(scraper)
-                        ) {
-                            AnimeCardView(anime: anime)
-                        }
-                        .buttonStyle(.plain)
-                        .onAppear {
-                            // تحميل الصفحة التالية فقط عند ظهور العنصر الأخير
-                            if !isSearching,
-                               anime.id == scraper.animeList.last?.id,
-                               !scraper.isLoadingList,
-                               scraper.hasMorePages {
-                                scraper.loadNextPage(status: selectedFilter.statusParam)
+        ScrollViewReader { scrollProxy in
+            ScrollView {
+                if scraper.isLoadingList && scraper.animeList.isEmpty {
+                    loadingGrid
+                } else {
+                    LazyVGrid(
+                        columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 3),
+                        spacing: 14
+                    ) {
+                        ForEach(scraper.animeList) { anime in
+                            NavigationLink(
+                                destination: AnimeDetailView(animeURL: anime.url)
+                                    .environmentObject(scraper)
+                            ) {
+                                AnimeCardView(anime: anime)
+                            }
+                            .buttonStyle(.plain)
+                            .id(anime.id.uuidString) // إضافة ID فريد لكل عنصر
+                            .onAppear {
+                                // تحميل الصفحة التالية فقط عند ظهور العنصر الأخير
+                                if !isSearching,
+                                   anime.id == scraper.animeList.last?.id,
+                                   !scraper.isLoadingList,
+                                   scraper.hasMorePages {
+                                    scraper.loadNextPage(status: selectedFilter.statusParam)
+                                }
                             }
                         }
                     }
-                }
-                .padding(.horizontal, 16)
-                .padding(.top, 12)
-                .padding(.bottom, 30)
+                    .padding(.horizontal, 16)
+                    .padding(.top, 12)
+                    .padding(.bottom, 30)
 
-                if scraper.isLoadingList {
-                    ProgressView()
-                        .tint(accentPurple)
-                        .padding(.bottom, 20)
+                    if scraper.isLoadingList {
+                        ProgressView()
+                            .tint(accentPurple)
+                            .padding(.bottom, 20)
+                    }
+                }
+            }
+            .onChange(of: scraper.animeList.count) { _ in
+                // الحفاظ على موضع التمرير عند إضافة عناصر جديدة
+                if let lastID = scraper.animeList.last?.id.uuidString {
+                    withAnimation {
+                        scrollProxy.scrollTo(lastID, anchor: .bottom)
+                    }
                 }
             }
         }
@@ -245,7 +257,7 @@ struct ContentView: View {
     }
 }
 
-// MARK: - Shimmer Effect (تبقى كما هي)
+// MARK: - Shimmer Effect
 struct ShimmerModifier: ViewModifier {
     @State private var phase: CGFloat = 0
     func body(content: Content) -> some View {
